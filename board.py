@@ -50,37 +50,10 @@ class board():
             }
         }
 
-
-    def move(self,move):
-        if move=="0-0":
-            pass
-        elif move=="0-0-0":
-            pass
-        elif "=" in move:
-            pass
-        fig,old_hor,old_ver,new_hor,new_ver=move[0],move[1],int(move[2]),move[3],int(move[4])
-        decode={i[0]:i[1] for i in list(zip(list("abcdefgh"),[i for i in range(7)]))}
-
-        old_hor_decode=decode[old_hor]
-        new_hor_decode=decode[new_hor]
-        old_ver_decode=old_ver-1
-        new_ver_decode=new_ver-1
-
-        if fig!=self.board[(old_hor_decode,old_ver_decode)].name:
-            print(fig)
-            print(self.board[(old_hor_decode,old_ver_decode)].name)
-            raise KeyError(f"on {old_hor}{old_ver} not a {fig}")
-            
-
-        self.board[(old_hor_decode,old_ver_decode)].move((new_hor_decode,new_ver_decode))
-
-        return self.board
-    
-
     def get_all_moves(self, coordinates: Tuple):
         name = self.board[coordinates].name
-        x = coordinates[0]
-        y = coordinates[1]
+        y = coordinates[0]
+        x = coordinates[1]
 
         possible_moves = []
 
@@ -88,97 +61,127 @@ class board():
             if self.board[coordinates].color=="white":
                 # тут может быть еще на самом деле en-passant но мне похрен его реализовывать
                 # превращение пешки тоже будет реализовывать другой скрипт
-                if y==1 and self.board[(x,2)]==None and self.board(x,3)==None:
-                    possible_moves=[(x,2),(x,3)]
-                elif self.board[(x,y+1)]!=None: 
-                    possible_moves=[(x,y+1)]
+                if y==1 and self.board[(2,x)]==None and self.board[(3,x)]==None:
+                    possible_moves=[(2,x),(3,x)]
+                elif self.board[(y+1,x)]!=None: 
+                    possible_moves=[(y+1,x)]
             else:
-                if y==7 and self.board[(x,6)]==None and self.board(x,5)==None:
-                    possible_moves=[(x,6),(x,5)]
-                elif self.board[(x,y-1)]!=None: 
-                    possible_moves=[(x,y-1)]
+                if y==6 and self.board[(5,x)]==None and self.board[(4,x)]==None:
+                    possible_moves=[(5,x),(4,x)]
+                elif self.board[(y-1,x)]!=None: 
+                    possible_moves=[(y-1,x)]
+
 
         if name == "K":
-            possible_moves = [(x - 1, y - 1), (x - 1, y), (x - 1, y + 1), (x, y - 1), (x, y + 1), (x + 1, y - 1), (x + 1, y), (x + 1, y + 1)]
+            possible_moves = [(y - 1, x - 1), (y - 1, x), (y - 1, x + 1), (y, x - 1), (y, x + 1), (y + 1, x - 1), (y + 1, x), (y + 1, x + 1)]
+            ans=[]
+            flag=True
+            for i in possible_moves:
+                for j in i:
+                    if j<=0 or j>7:
+                        flag=False
+
+                if flag:
+                    if self.board[(i[0],i[1])]==None:
+                        ans.append(i)
+                flag=True
+            
+            possible_moves=ans
 
         if name == "N":
-            possible_moves = [(x - 2, y + 1), (x - 1, y + 2), (x + 1, y + 2), (x + 2, y + 1), (x + 2, y - 1), (x + 1, y - 2), (x - 1, y - 2), (x - 2, y - 1)]
+            possible_moves = [(y - 2, x + 1), (y - 1, x + 2), (y + 1, x + 2), (y + 2, x + 1), (y + 2, x - 1), (y + 1, x - 2), (y - 1, x - 2), (y - 2, x - 1)]
+            ans=[]
+            flag=True
+            for i in possible_moves:
+                for j in i:
+                    if j<=0 or j>7:
+                        flag=False
+
+                if flag:
+                    if self.board[(i[0],i[1])]==None:
+                        ans.append(i)
+                flag=True
+            
+            possible_moves=ans
 
         if name == "R" or name=="Q":
             
-            x_copy = x
+            y_copy = y
 
             # двигаемся влево пока на наших полях None и пока мы не вышли за пределы доски
-            while (x_copy >= 0) and (self.board[(x_copy, y)] == None):
-                x_copy -= 1
-                possible_moves.append((x_copy, y))
+            while (y_copy >= 0) and (self.board[(y_copy, x)] == None):
+                y_copy -= 1
+                possible_moves.append((y_copy, x))
                 
 
             # вправо
-            x_copy = x
-            while (x_copy <= 7) and (self.board[(x_copy, y)] == None):
-                x_copy += 1
-                possible_moves.append((x_copy, y))
+            y_copy = y
+            while (y_copy <= 7) and (self.board[(y_copy, x)] == None):
+                y_copy += 1
+                possible_moves.append((y_copy, x))
             
 
             # вверх
-            y_copy = y
-            while (y_copy <= 7) and (self.board[(x, y_copy)] == None):
-                y_copy += 1
-                possible_moves.append((x_copy, y))
+            x_copy = x
+            while (x_copy <= 7) and (self.board[(y, x_copy)] == None):
+                x_copy += 1
+                possible_moves.append((y_copy, x))
               
 
             # вниз
-            y_copy = y
-            while (y_copy >= 0) and (self.board[(x, y_copy)] == None):
-                y_copy -= 1
-                possible_moves.append((x_copy, y))
+            x_copy = x
+            while (x_copy >= 0) and (self.board[(y, x_copy)] == None):
+                x_copy -= 1
+                possible_moves.append((y_copy, x))
                 
 
 
         if name == "B" or name=="Q":
             
-            x_copy = x
             y_copy = y
+            x_copy = x
 
             # влево вниз
-            while (x_copy >= 0) and (y_copy >= 0) and (self.board[(x_copy, y)] == None):
-                x_copy -= 1
+            while (y_copy >= 0) and (x_copy >= 0) and (self.board[(y_copy, x)] == None):
                 y_copy -= 1
-                possible_moves.append((x_copy, y_copy))
+                x_copy -= 1
+                possible_moves.append((y_copy, x_copy))
                 
 
-            x_copy = x
             y_copy = y
+            x_copy = x
 
             # вправо вниз
-            while (x_copy <= 7) and (y_copy>=0 ) and (self.board[(x_copy, y)] == None):
-                possible_moves.append((x_copy, y))
-                x_copy += 1
-                y_copy -=1
-            
-            x_copy=x
-            y_copy = y
-            #вправо вверх
-            while (x_copy <= 7) and (y_copy<=7) and (self.board[(x, y_copy)] == None):
-                possible_moves.append((x_copy, y))
-                x_copy +=1
+            while (y_copy <= 7) and (x_copy>=0 ) and (self.board[(y_copy, x)] == None):
+                possible_moves.append((y_copy, x))
                 y_copy += 1
+                x_copy -=1
+            
+            y_copy=y
+            x_copy = x
+            #вправо вверх
+            while (y_copy <= 7) and (x_copy<=7) and (self.board[(y, x_copy)] == None):
+                possible_moves.append((y_copy, x))
+                y_copy +=1
+                x_copy += 1
                 
 
-            x_copy=x
-            y_copy = y
+            y_copy=y
+            x_copy = x
             #влево вверх
-            while (x_copy<=0) and (y_copy <= 7) and (self.board[(x, y_copy)] == None):
-                possible_moves.append((x_copy, y))
-                x_copy-=1
-                y_copy += 1
+            while (y_copy<=0) and (x_copy <= 7) and (self.board[(y, x_copy)] == None):
+                possible_moves.append((y_copy, x))
+                y_copy-=1
+                x_copy += 1
 
         return possible_moves
+
+
 
     def __repr__(self) -> str:
         s=""
         for i in range(7,-1,-1):
+            s+=str(i+1)+" "
             for j in range(7,-1,-1):
                 if self.board[(i,j)]==None:
                     s+="--"+" "
@@ -187,11 +190,14 @@ class board():
                 elif self.board[(i,j)].color=="black":
                     s+=f"b{self.board[(i,j)].name}"+" "
             s+="\n"
+        s=s+"  a  b  c  d  e  f  g  h"
         return s
     
 
-b=board()
 
-print(b)
+if __name__=="__main__":
+    b=board()
+
+    print(b)
 
 
