@@ -50,13 +50,13 @@ class board():
             }
         }
 
-    def get_all_moves(self, coordinates: Tuple):
+    def possible_moves(self, coordinates: Tuple):
         name = self.board[coordinates].name
         y = coordinates[0]
         x = coordinates[1]
 
         possible_moves = []
-
+        
         if name == "P":
             if self.board[coordinates].color=="white":
                 # тут может быть еще на самом деле en-passant но мне похрен его реализовывать
@@ -109,28 +109,28 @@ class board():
             y_copy = y
 
             # двигаемся влево пока на наших полях None и пока мы не вышли за пределы доски
-            while (y_copy >= 0) and (self.board[(y_copy, x)] == None):
+            while (y_copy >= 0) and ((y_copy==y and x_copy==x) or self.board[(y_copy, x)] == None):
                 y_copy -= 1
                 possible_moves.append((y_copy, x))
                 
 
             # вправо
             y_copy = y
-            while (y_copy <= 7) and (self.board[(y_copy, x)] == None):
+            while (y_copy <= 7) and ((y_copy==y and x_copy==x) or self.board[(y_copy, x)] == None):
                 y_copy += 1
                 possible_moves.append((y_copy, x))
             
 
             # вверх
             x_copy = x
-            while (x_copy <= 7) and (self.board[(y, x_copy)] == None):
+            while (x_copy <= 7) and ((y_copy==y and x_copy==x) or self.board[(y, x_copy)] == None):
                 x_copy += 1
                 possible_moves.append((y_copy, x))
               
 
             # вниз
             x_copy = x
-            while (x_copy >= 0) and (self.board[(y, x_copy)] == None):
+            while (x_copy >= 0) and ((y_copy==y and x_copy==x) or self.board[(y, x_copy)] == None):
                 x_copy -= 1
                 possible_moves.append((y_copy, x))
                 
@@ -142,37 +142,44 @@ class board():
             x_copy = x
 
             # влево вниз
-            while (y_copy >= 0) and (x_copy >= 0) and (self.board[(y_copy, x)] == None):
+            while (y_copy >= 0) and (x_copy >= 0) and ((y_copy==y and x_copy==x) or self.board[(y_copy, x_copy)] == None):
+                if not(y_copy==y and x_copy==x):
+                    possible_moves.append((y_copy, x_copy))
                 y_copy -= 1
                 x_copy -= 1
-                possible_moves.append((y_copy, x_copy))
+                
                 
 
             y_copy = y
             x_copy = x
 
-            # вправо вниз
-            while (y_copy <= 7) and (x_copy>=0 ) and (self.board[(y_copy, x)] == None):
-                possible_moves.append((y_copy, x))
+            # влево вверх
+            while (y_copy <= 7) and (x_copy >=0 ) and ((y_copy==y and x_copy==x) or self.board[(y_copy, x_copy)] == None):
+                if not(y_copy==y and x_copy==x):
+                    possible_moves.append((y_copy, x_copy))
                 y_copy += 1
                 x_copy -=1
-            
+                
             y_copy=y
             x_copy = x
             #вправо вверх
-            while (y_copy <= 7) and (x_copy<=7) and (self.board[(y, x_copy)] == None):
-                possible_moves.append((y_copy, x))
+            while (y_copy <= 7) and (x_copy <= 7) and ((y_copy==y and x_copy==x) or self.board[(y_copy, x_copy)] == None):
+                if not(y_copy==y and x_copy==x):
+                    possible_moves.append((y_copy, x_copy))
                 y_copy +=1
                 x_copy += 1
+
                 
 
             y_copy=y
             x_copy = x
-            #влево вверх
-            while (y_copy<=0) and (x_copy <= 7) and (self.board[(y, x_copy)] == None):
-                possible_moves.append((y_copy, x))
+            #вправо вниз
+            while (y_copy>=0) and (x_copy <= 7) and ((y_copy==y and x_copy==x) or self.board[(y_copy, x_copy)] == None):
+                if not(y_copy==y and x_copy==x):
+                    possible_moves.append((y_copy, x_copy))
                 y_copy-=1
                 x_copy += 1
+                
 
         return possible_moves
 
@@ -182,7 +189,7 @@ class board():
         s=""
         for i in range(7,-1,-1):
             s+=str(i+1)+" "
-            for j in range(7,-1,-1):
+            for j in range(8):
                 if self.board[(i,j)]==None:
                     s+="--"+" "
                 elif self.board[(i,j)].color=="white":
