@@ -1,6 +1,8 @@
 from board import board
 from typing import Tuple
+from typing import Dict, List, Tuple
 
+FigureDict = Dict[str, Dict[str, List[Tuple[int, int]]]]
 
 class InvalidMoveError(Exception):
     pass
@@ -16,19 +18,34 @@ class game():
         self.board=board()
         self.history_boards=[self.board]
         self.history_moves=[]
-
-    def game_over(self):# true если для одной из сторон любой ход ведет в шах
-        pass
+    
+    def make_board_from_figures_dict(figures_dict):
+        
+    def is_game_over(self):
+        # true если для одной из сторон любой ход ведет в шах
+        # если true выдает кто выиграл
+        # если игра продолжается выдает false None
+        # провер
+        return False,None
 
     def is_check(self,color):
         # true если король цвета color находится под шахом
         # т.е. если бы сторона opposite_color ходила дважды то они бы могли его срубить т.е.
         # одна из фигур могла бы оказаться на месте короля 
-        self.__king_position=self.board.figures_dict[color]["K"]
+        king_position=self.board.figures_dict[color]["K"]
+        if color=="white":
+            if king_position in self.board.all_possible_moves_for_color("black"):    
+                return True
+            else:
+                return False
+        if color=="black":
+            if king_position in self.board.all_possible_moves_for_color("white"):    
+                return True
+            else:
+                return False
 
         
-        pass
-
+      
     def move(self,move,creative=False):
         
         if move=="0-0":
@@ -57,14 +74,20 @@ class game():
         if (new_ver_decode,new_hor_decode) not in self.board.possible_moves((old_ver_decode,old_hor_decode)):
             raise InvalidMoveError(f"fig on {old_hor}{old_ver} cant go on a {new_hor}{new_ver}")
         
+
+
         old_fig=self.board.board[(old_ver_decode,old_hor_decode)]
-        
+        color=old_fig.color
+        name=old_fig.name
         self.board.board[(new_ver_decode,new_hor_decode)]=old_fig
         self.board.board[(old_ver_decode,old_hor_decode)]=None
     
+        self.board.figures_dict[color][name].remove([old_ver_decode,old_hor_decode])
+        self.board.figures_dict[color][name].append([new_ver_decode,new_hor_decode])
 
         self.history_boards.append(self.board)    
         self.history_moves.append(move)
+        
 
     def start(self):
         i=0

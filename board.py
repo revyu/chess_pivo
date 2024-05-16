@@ -1,54 +1,72 @@
 from itertools import product
 from figure import figure
-from typing import Tuple
+from typing import Tuple ,Dict,List
+
+FigureToPlace = Dict[str, Dict[str, List[Tuple[int, int]]]]
 
 class board():
     def __init__(self) -> None:
-        self.board={tuple(i): None for i in # клетка - к фигуре
-                    list(product([i for i in range(8)], [i for i in range(8)]))}
-        for i in range(8):
-            self.board[(1, i)] = figure(self, "white", "P", (1, i))  # Пешки белых на седьмом столбце
-            self.board[(6, i)] = figure(self, "black", "P", (6, i))  # Пешки черных на втором столбце
-
-        self.board[(0, 0)] = figure(self, "white", "R", (0, 0))  # Белая ладья на позиции a1
-        self.board[(0, 1)] = figure(self, "white", "N", (0, 1))  # Белый конь на позиции b1
-        self.board[(0, 2)] = figure(self, "white", "B", (0, 2))  # Белый слон на позиции c1
-        self.board[(0, 3)] = figure(self, "white", "Q", (0, 3))  # Белая королева на позиции d1
-        self.board[(0, 4)] = figure(self, "white", "K", (0, 4))  # Белый король на позиции e1
-        self.board[(0, 5)] = figure(self, "white", "B", (0, 5))  # Белый слон на позиции f1
-        self.board[(0, 6)] = figure(self, "white", "N", (0, 6))  # Белый конь на позиции g1
-        self.board[(0, 7)] = figure(self, "white", "R", (0, 7))  # Белая ладья на позиции h1
-
-        self.board[(7, 0)] = figure(self, "black", "R", (7, 0))  # Черная ладья на позиции a8
-        self.board[(7, 1)] = figure(self, "black", "N", (7, 1))  # Черный конь на позиции b8
-        self.board[(7, 2)] = figure(self, "black", "B", (7, 2))  # Черный слон на позиции c8
-        self.board[(7, 3)] = figure(self, "black", "Q", (7, 3))  # Черная королева на позиции d8
-        self.board[(7, 4)] = figure(self, "black", "K", (7, 4))  # Черный король на позиции e8
-        self.board[(7, 5)] = figure(self, "black", "B", (7, 5))  # Черный слон на позиции f8
-        self.board[(7, 6)] = figure(self, "black", "N", (7, 6))  # Черный конь на позиции g8
-        self.board[(7, 7)] = figure(self, "black", "R", (7, 7))  # Черная ладья на позиции h8
 
         self.figures_dict={ # фигура- к клетке
             # точнее фигура к нескольким клеткам т.к. есть одинаковые фигуры на доске
             # создан что бы при подсчете шаха не перебирать все клетки доски
             # а только фигуры, более того только фигуры определенного цвета
             "white":{
-                "P":[[1,i] for i in range(8)],
-                "R":[[0,0],[0,7]],
-                "N":[[0,1],[0,6]],
-                "B":[[0,2],[0,5]],
-                "Q":[[0,3]],
-                "K":[[0,4]]
+                "P":[(1,i) for i in range(8)],
+                "R":[(0,0),(0,7)],
+                "N":[(0,1),(0,6)],
+                "B":[(0,2),(0,5)],
+                "Q":[(0,3)],
+                "K":[(0,4)]
             },
             "black":{
-                "P":[[6,i] for i in range(8)],
-                "R":[[7,0],[7,7]],
-                "N":[[7,1],[7,6]],
-                "B":[[7,2],[7,5]],
-                "Q":[[7,3]],
-                "K":[[7,4]]
+                "P":[(6,i) for i in range(8)],
+                "R":[(7,0),(7,7)],
+                "N":[(7,1),(7,6)],
+                "B":[(7,2),(7,5)],
+                "Q":[(7,3)],
+                "K":[(7,4)]
             }
         }
+        self.make_board_from_figures_dict(figures_dict=self.figures_dict)
+
+
+    def make_board_from_figures_dict(self,figures_dict:FigureToPlace,need_empty_board_first=True,board_size=(8,8)):
+        self.board=self.make_empty_board()
+       
+        for color,pieces in figures_dict.items():    
+            for piece in pieces.keys():
+                for place in pieces[piece]:
+                    self.board[place]=figure(self,color,piece,place)
+
+    def make_empty_board(self,board_size=(8,8),rectangle=True):
+        if rectangle:
+            self.board={tuple(i): None for i in # клетка - к фигуре
+                    list(product([i for i in range(board_size[0])], [i for i in range(board_size[1])]))}
+        return self.board
+
+    def all_possible_moves_for_color(self,color):
+        if color=="white":
+            #ищем все ходы черных фигур
+            #для этого сначала получаем все позиции черных после запускаме all_possible_moves от каждой из них
+            all_pieces=[]
+            for piece_type, positions in self.board.figures_dict["black"].items():
+                all_pieces.extend(positions)
+            
+            all_possible_moves=[]
+            for piece in all_pieces:
+                all_possible_moves.extend(self.board.possible_moves(piece))
+        
+        if color=="black":
+            all_pieces=[]
+            for piece_type, positions in self.board.figures_dict["white"].items():
+                all_pieces.extend(positions)
+            
+            all_possible_moves=[]
+            for piece in all_pieces:
+                all_possible_moves.extend(self.board.possible_moves(piece))
+        
+        return all_possible_moves
 
     def possible_moves(self, coordinates: Tuple):
         name = self.board[coordinates].name
